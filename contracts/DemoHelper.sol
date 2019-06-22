@@ -4,21 +4,30 @@ import "./interfaces/HydroInterface.sol";
 import "./interfaces/SnowflakeInterface.sol";
 import "./interfaces/IdentityRegistryInterface.sol";
 
+import "./zeppelin/ownership/Ownable.sol";
+
+// @deprecated
+/*
 contract HydroRinkeby {
     function getMoreTokens() external;
 }
+*/
 
-contract DemoHelper {
+contract DemoHelper is Ownable {
     address public snowflakeAddress;
     SnowflakeInterface private snowflake;
     IdentityRegistryInterface private identityRegistry;
     address public snowMoResolverAddress;
+    
+    address public tokenHolder;
 
-    constructor (address _snowflakeAddress, address _resolverAddress) public {
+    constructor (address _snowflakeAddress, address _resolverAddress, address _tokenHolder) public {
         snowflakeAddress = _snowflakeAddress;
         snowflake = SnowflakeInterface(snowflakeAddress);
         identityRegistry = IdentityRegistryInterface(snowflake.identityRegistryAddress());
         snowMoResolverAddress = _resolverAddress;
+        
+        tokenHolder = _tokenHolder;
     }
 
     // wrap createIdentityDelegated and initialize the client raindrop resolver
@@ -40,8 +49,9 @@ contract DemoHelper {
             _ein, snowMoResolverAddress, true, 0, abi.encode(associatedAddress, tokensReceivedAddress)
         );
 
+        // @deprecated
         // get free testnet tokens
-        HydroRinkeby(snowflake.hydroTokenAddress()).getMoreTokens();
+        // HydroRinkeby(snowflake.hydroTokenAddress()).getMoreTokens();
 
         // deposit new tokens into snowflake
         HydroInterface(snowflake.hydroTokenAddress())
@@ -49,4 +59,17 @@ contract DemoHelper {
 
         return _ein;
     }
+    
+    function setTokenHolder(address _newTokenholder) public onlyOwner {
+        tokenHolder = _newTokenholder;
+    }
+    
+    function withdraw(uint amount) public onlyOwner returns(bool) {
+        require(amount <= address(this).balance);
+        msg.sender.transfer(amount);
+        
+        return true;
+    }
+    
+    function() external payable { }
 }
