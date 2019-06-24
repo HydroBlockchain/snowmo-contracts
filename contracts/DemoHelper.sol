@@ -53,10 +53,10 @@ contract DemoHelper is Ownable {
         milestoneUno = 2000;
         rewardUno = 10000 * atomicUnit;
         
-        milestoneDuo = milestoneUno + 3000;
+        milestoneDuo = 5000;
         rewardDuo = 5000 * atomicUnit;
         
-        milestoneTrio = milestoneDuo + 5000;
+        milestoneTrio = 10000;
         rewardTrio = 1000 * atomicUnit;
         
         airdropActive = true;
@@ -134,25 +134,31 @@ contract DemoHelper is Ownable {
         milestoneStartRange = _startRange;
     }
     
-    function setMilestoneUno(uint _numberOfUsers, uint _reward) public onlyOwner {
-        require(_reward > 0);
+    function setMilestones (
+        uint _milestoneUno,
+        uint _rewardUno,
+        uint _milestoneDuo,
+        uint _rewardDuo,
+        uint _milestoneTrio,
+        uint _rewardTrio
+    )
+    public onlyOwner {
+        require(_milestoneUno > 0);
+        require(_milestoneDuo > _milestoneUno);
+        require(_milestoneTrio > _milestoneDuo);
         
-        milestoneUno = _numberOfUsers;
-        rewardUno = _reward;
-    }
-    
-    function setMilestoneDuo(uint _numberOfUsers, uint _reward) public onlyOwner {
-        require(_reward > 0);
+        require(_rewardUno > 0);
+        require(_rewardDuo > 0);
+        require(_rewardTrio > 0);
         
-        milestoneDuo = milestoneUno.add(_numberOfUsers);
-        rewardDuo = _reward;
-    }
-    
-    function setMilestoneTrio(uint _numberOfUsers, uint _reward) public onlyOwner {
-        require(_reward > 0);
+        milestoneUno = _milestoneUno;
+        rewardUno = _rewardUno;
         
-        milestoneTrio = milestoneDuo.add(_numberOfUsers);
-        rewardTrio = _reward;
+        milestoneDuo = _milestoneDuo;
+        rewardDuo = _rewardDuo;
+        
+        milestoneTrio = _milestoneTrio;
+        rewardTrio = _rewardTrio;
     }
     
     function withdraw(uint amount) public onlyOwner returns(bool) {
