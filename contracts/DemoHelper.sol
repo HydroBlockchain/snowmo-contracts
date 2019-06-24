@@ -130,20 +130,29 @@ contract DemoHelper is Ownable {
         hydroTokenAddress = _newhydroTokenAddress;
     }
     
-    function setMilestoneStartRange(uint startRange) public onlyOwner {
-        milestoneStartRange = startRange;
+    function setMilestoneStartRange(uint _startRange) public onlyOwner {
+        milestoneStartRange = _startRange;
     }
     
-    function setMilestoneUno(uint numberOfUsers) public onlyOwner {
-        milestoneUno = numberOfUsers;
+    function setMilestoneUno(uint _numberOfUsers, uint _reward) public onlyOwner {
+        require(_reward > 0);
+        
+        milestoneUno = _numberOfUsers;
+        rewardUno = _reward;
     }
     
-    function setMilestoneDuo(uint numberOfUsers) public onlyOwner {
-        milestoneDuo = milestoneUno.add(numberOfUsers);
+    function setMilestoneDuo(uint _numberOfUsers, uint _reward) public onlyOwner {
+        require(_reward > 0);
+        
+        milestoneDuo = milestoneUno.add(_numberOfUsers);
+        rewardDuo = _reward;
     }
     
-    function setMilestoneTrio(uint numberOfUsers) public onlyOwner {
-        milestoneTrio = milestoneDuo.add(numberOfUsers);
+    function setMilestoneTrio(uint _numberOfUsers, uint _reward) public onlyOwner {
+        require(_reward > 0);
+        
+        milestoneTrio = milestoneDuo.add(_numberOfUsers);
+        rewardTrio = _reward;
     }
     
     function withdraw(uint amount) public onlyOwner returns(bool) {
