@@ -22,19 +22,24 @@ contract DemoHelper is Ownable {
     IdentityRegistryInterface private identityRegistry;
     address public snowMoResolverAddress;
     
-    address public hydroTokenAddress;
-    uint internal _regUsers;
-    
     uint constant atomicUnit = 10**18;
     
-    uint constant milestoneUno = 2000;
-    uint constant rewardUno = 10000 * atomicUnit;
+    address public hydroTokenAddress;
+    bool public airdropActive;
     
-    uint constant milestoneDuo = milestoneUno + 3000;
-    uint constant rewardDuo = 5000 * atomicUnit;
+    uint private _regUsers;
+    bool private _blockRewards; 
     
-    uint constant milestoneTrio = milestoneDuo + 5000;
-    uint constant rewardTrio = 1000 * atomicUnit;
+    uint public milestoneStartRange;
+    
+    uint public milestoneUno;
+    uint public rewardUno;
+    
+    uint public milestoneDuo;
+    uint public rewardDuo;
+    
+    uint public milestoneTrio;
+    uint public rewardTrio;
     
     constructor (address _snowflakeAddress, address _resolverAddress, address _hydroTokenAddress) public {
         snowflakeAddress = _snowflakeAddress;
@@ -43,6 +48,18 @@ contract DemoHelper is Ownable {
         snowMoResolverAddress = _resolverAddress;
         
         hydroTokenAddress = _hydroTokenAddress;
+        
+        // Primary Rewards
+        milestoneUno = 2000;
+        rewardUno = 10000 * atomicUnit;
+        
+        milestoneDuo = milestoneUno + 3000;
+        rewardDuo = 5000 * atomicUnit;
+        
+        milestoneTrio = milestoneDuo + 5000;
+        rewardTrio = 1000 * atomicUnit;
+        
+        airdropActive = true;
     }
 
     // wrap createIdentityDelegated and initialize the client raindrop resolver
@@ -77,23 +94,32 @@ contract DemoHelper is Ownable {
         
         // Calculate reward
         uint rewards;
-        if (_regUsers <= milestoneUno) {
+        if (_regUsers > milestoneStartRange && _regUsers <= milestoneUno + milestoneStartRange) {
             rewards = rewardUno;
         }
-        else if (_regUsers <= milestoneDuo) {
+        else if (_regUsers > milestoneStartRange && _regUsers <= milestoneDuo + milestoneStartRange) {
             rewards = rewardDuo;
         }
-        else if (_regUsers <= milestoneTrio) {
+        else if (_regUsers > milestoneStartRange && _regUsers <= milestoneTrio + milestoneStartRange) {
             rewards = rewardTrio;
         }
         
-        // Give reward to snowflake id if reward greater than 0
-        if (rewards > 0) {
+        // Give reward to snowflake id if reward greater than 0 and rewards are not blocked 
+        if (rewards > 0 && _blockRewards == false) {
             HydroInterface(snowflake.hydroTokenAddress())
                 .approveAndCall(snowflakeAddress, rewards, abi.encode(_ein));
+                
+            airdropActive = true;
+        }
+        else {
+            airdropActive = false;
         }
         
         return _ein;
+    }
+    
+    function blockRewards(bool value) public onlyOwner {
+        _blockRewards = value;
     }
     
     function getRegisteredUsers() public view returns (uint registeredUsers) {
@@ -102,6 +128,22 @@ contract DemoHelper is Ownable {
     
     function sethydroTokenAddress(address _newhydroTokenAddress) public onlyOwner {
         hydroTokenAddress = _newhydroTokenAddress;
+    }
+    
+    function setMilestoneStartRange(uint startRange) public onlyOwner {
+        milestoneStartRange = startRange;
+    }
+    
+    function setMilestoneUno(uint numberOfUsers) public onlyOwner {
+        milestoneUno = numberOfUsers;
+    }
+    
+    function setMilestoneDuo(uint numberOfUsers) public onlyOwner {
+        milestoneDuo = milestoneUno.add(numberOfUsers);
+    }
+    
+    function setMilestoneTrio(uint numberOfUsers) public onlyOwner {
+        milestoneTrio = milestoneDuo.add(numberOfUsers);
     }
     
     function withdraw(uint amount) public onlyOwner returns(bool) {
